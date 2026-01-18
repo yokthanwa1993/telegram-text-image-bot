@@ -64,12 +64,12 @@ def generate_text_image(
     outline_color: str = "#000000",  # Black
     outline_width: int = 16,
     padding: int = 20,
-    line_spacing: int = 30,
     max_width: int = 1200,  # Maximum image width
     min_font_size: int = 60,  # Minimum font size
 ) -> bytes:
     """
     Generate a PNG image with two lines of text.
+    Line spacing is automatically calculated based on actual text bounds.
 
     Args:
         line1: First line of text (orange)
@@ -80,7 +80,6 @@ def generate_text_image(
         outline_color: Color for text outline
         outline_width: Width of outline in pixels
         padding: Padding around the image
-        line_spacing: Space between lines
         max_width: Maximum image width (auto-resize font if exceeded)
         min_font_size: Minimum font size when auto-resizing
 
@@ -118,13 +117,11 @@ def generate_text_image(
         # Reduce font size and try again
         current_font_size -= 10
 
-    # Recalculate with final font size
     # Adjust outline width proportionally if font was reduced
     if current_font_size < font_size:
         outline_width = max(8, int(outline_width * current_font_size / font_size))
-        line_spacing = max(10, int(line_spacing * current_font_size / font_size))
 
-    # Get text bounding boxes
+    # Get text bounding boxes (these give actual rendered bounds)
     bbox1 = temp_draw.textbbox((0, 0), line1, font=font)
     bbox2 = temp_draw.textbbox((0, 0), line2, font=font)
 
@@ -133,6 +130,11 @@ def generate_text_image(
     text2_width = bbox2[2] - bbox2[0]
     text2_height = bbox2[3] - bbox2[1]
 
+    # Auto-calculate line spacing based on font size
+    # Use 5% of font size as the visual gap between lines
+    # This creates consistent visual separation regardless of Thai vowel marks
+    visual_gap = int(current_font_size * 0.05)
+
     # Calculate image dimensions
     # Minimal top padding, extra bottom padding for Thai text descenders
     top_pad = outline_width + 5
@@ -140,7 +142,7 @@ def generate_text_image(
     side_pad = outline_width * 2
 
     img_width = max(text1_width, text2_width) + side_pad * 2
-    img_height = text1_height + text2_height + line_spacing + top_pad + bottom_pad
+    img_height = text1_height + text2_height + visual_gap + top_pad + bottom_pad
 
     # Create the actual image with transparent background
     img = Image.new('RGBA', (int(img_width), int(img_height)), (0, 0, 0, 0))
@@ -151,7 +153,7 @@ def generate_text_image(
     y1 = top_pad
 
     x2 = (img_width - text2_width) // 2
-    y2 = y1 + text1_height + line_spacing
+    y2 = y1 + text1_height + visual_gap
 
     # Draw text with outlines
     draw_text_with_outline(
