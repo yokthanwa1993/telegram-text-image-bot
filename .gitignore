@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+test_output.png
+.DS_Store
+venv/
+.venv/
+firebase-debug.log
