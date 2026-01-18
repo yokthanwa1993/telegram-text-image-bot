@@ -64,7 +64,7 @@ def generate_text_image(
     outline_color: str = "#000000",  # Black
     outline_width: int = 16,
     padding: int = 20,
-    line_spacing: int = 50,
+    line_spacing: int = 30,
     max_width: int = 1200,  # Maximum image width
     min_font_size: int = 60,  # Minimum font size
 ) -> bytes:
